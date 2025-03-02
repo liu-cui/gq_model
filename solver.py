@@ -51,8 +51,8 @@ class GModel:
         # 参数
         self.M = cfg.bigM
         self.CAP = cfg.CAP
-        self.d_matrix = calc_distance_matrix(cfg.coordinates)
-        self.t_matrix = calc_distance_matrix(cfg.coordinates)
+        self.d_matrix = calc_distance_matrix(cfg.coordinates)  # 距离矩阵
+        self.t_matrix = calc_distance_matrix(cfg.coordinates)  # 时间矩阵
         self.time_window = [(cfg.time_window_a, cfg.time_window_b) for _ in range(len(self.V))]
         # 决策变量
         self.x = self.model.addVars(self.V, self.V, self.K, vtype=GRB.BINARY, name='x')  # x(i,j,k)
