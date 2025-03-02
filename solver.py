@@ -28,7 +28,7 @@ def calc_distance_matrix(coords):
 
 class Config:
     """
-    模型参数设置
+    模型的所有参数设置
     """
 
     def __init__(self):
@@ -51,8 +51,10 @@ class GModel:
         # 参数
         self.M = cfg.bigM
         self.CAP = cfg.CAP
+        # Todo: 须替换地方
         self.d_matrix = calc_distance_matrix(cfg.coordinates)  # 距离矩阵
         self.t_matrix = calc_distance_matrix(cfg.coordinates)  # 时间矩阵
+
         self.time_window = [(cfg.time_window_a, cfg.time_window_b) for _ in range(len(self.V))]
         # 决策变量
         self.x = self.model.addVars(self.V, self.V, self.K, vtype=GRB.BINARY, name='x')  # x(i,j,k)
@@ -66,6 +68,7 @@ class GModel:
         self.routes = list()
 
     def set_objective(self):
+        # Todo: 目标函数须改
         self.model.setObjective(
             gp.quicksum(self.d_matrix[i][j] * self.x[i, j, k] for i in self.V for j in self.V for k in self.K),
             GRB.MAXIMIZE
