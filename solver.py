@@ -9,14 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-# ======================
-#   数据准备（示例数据）
-# ======================
-# n = 5  # 客户数量(节点0为车场)
-# Q = 100  # 车辆容量
-# M = 1e6  # 大常数
-
-
 def print_hi(name):
     print(f"Hi, {name}")
 
