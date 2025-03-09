@@ -69,6 +69,7 @@ class G2Model():
 
         # 模型1的求解结果
         self.settled_f1_obj_value = settled_f1_obj_value
+        self.epsilon = -10
 
     def set_objective(self):
         '''总MPI最大化'''
@@ -160,7 +161,7 @@ class G2Model():
         settled_obj_value: solver_obj_1的 obj
         """
         self.model.addConstrs(
-            gp.quicksum(-self.MPI[i] * self.y[i, k] for i in self.V for k in self.K) >= self.settled_f1_obj_value,
+            gp.quicksum(-self.MPI[i] * self.y[i, k] for i in self.V for k in self.K) >= self.settled_f1_obj_value + self.epsilon,
             name="obj2constraint"
         )
 
