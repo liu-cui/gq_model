@@ -74,16 +74,16 @@ class GModel():
             index=0, priority=2
         )
 
-        '''总费用最小化'''
-        self.model.setObjectiveN(
-            gp.quicksum(self.p[k] * self.c_worker for k in self.K)
-            + gp.quicksum(
-                self.t[i, k] * self.c_machine[self.dis_type[i]] + self.area[i] * self.c_material[self.dis_type[i]] *
-                self.y[i, k] for i in self.V for k in self.K)
-            + gp.quicksum(
-                self.x[i, j, k] * self.d_matrix[i, j] * self.c_fuel for i in self.V for j in self.V for k in self.K),
-            index=1, priority=1
-        )
+        # '''总费用最小化'''
+        # self.model.setObjectiveN(
+        #     gp.quicksum(self.p[k] * self.c_worker for k in self.K)
+        #     + gp.quicksum(
+        #         self.t[i, k] * self.c_machine[self.dis_type[i]] + self.area[i] * self.c_material[self.dis_type[i]] *
+        #         self.y[i, k] for i in self.V for k in self.K)
+        #     + gp.quicksum(
+        #         self.x[i, j, k] * self.d_matrix[i, j] * self.c_fuel for i in self.V for j in self.V for k in self.K),
+        #     index=1, priority=1
+        # )
 
     def constraint_visit(self):
         """病害点至多被访问一次
@@ -171,15 +171,17 @@ class GModel():
 
     def model_solver_print(self):
         if self.model.status == GRB.OPTIMAL:
-            print(f"最优总距离：{self.model.objVal:.2f}")
+            print(f"最优总距离(settled_obj_value) = {self.model.objVal:.2f}")
             for key in self.x.keys():
                 if self.x[key].x > 0:
                     print(f"{self.x[key].VarName}= {self.x[key].x}")
 
     def model_result_analysis(self):
         # if self.model.status == GRB.OPTIMAL:
+        obj_val = None
         if 1:
             # print(f"MPI总值：{self.model.objVal:.2f}")
+            obj_val = self.model.getObjective(0).getValue()
             print(f"MPI总值：{self.model.getObjective(0).getValue()}")
             print(f"总费用：{self.model.getObjective(1).getValue()}")
 
@@ -200,8 +202,7 @@ class GModel():
                 print(f"到达时间: {[self.u[i].X for i in route]}")
                 print(f"维修的损伤点数：{len(route)}")
                 # print(f"k={k}, {self.routes[k]}")
-        else:
-            print("未找到可行解")
+            return obj_val
 
     def solve(self):
         self.set_constraints()
@@ -209,14 +210,12 @@ class GModel():
         self.model.write('gq_model.lp')
         self.set_model_parameters()
         self.model.optimize()
-
-        self.add_object_constraints()
-
         self.model_solver_print()
-        self.model_result_analysis()
+        obj_val = self.model_result_analysis()
+        return obj_val
 
 
 if __name__ == "__main__":
     print_hi("PyCharm")
     gq_model = GModel()
-    gq_model.solve()
+    obj_vali = gq_model.solve()

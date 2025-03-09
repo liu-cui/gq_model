@@ -26,8 +26,8 @@ def calc_distance_matrix(coords):
     return dist
 
 
-class GModel():
-    def __init__(self):
+class G2Model():
+    def __init__(self, settled_f1_obj_value):
         self.model = gp.Model('gq_model')
         self.vehicle_number = 2  # 车辆数
         self.people_number_per_vehicle = 2  # 每车人数
@@ -66,13 +66,17 @@ class GModel():
         # 结果收集
         self.routes = list()
 
+
+        # 模型1的求解结果
+        self.settled_f1_obj_value = settled_f1_obj_value
+
     def set_objective(self):
         '''总MPI最大化'''
         # todo: 目标函数1解到150s 保存中间状态解，输出的目标函数2
-        self.model.setObjectiveN(
-            gp.quicksum(-self.MPI[i] * self.y[i, k] for i in self.V for k in self.K),
-            index=0, priority=2
-        )
+        # self.model.setObjectiveN(
+        #     gp.quicksum(-self.MPI[i] * self.y[i, k] for i in self.V for k in self.K),
+        #     index=0, priority=2
+        # )
 
         '''总费用最小化'''
         self.model.setObjectiveN(
@@ -150,6 +154,16 @@ class GModel():
             for i in self.V for k in self.K
         )
 
+    def constraint_add_first_objective(self):
+        """
+        第一个目标函数的次优解作为第二个目标函数的约束
+        settled_obj_value: solver_obj_1的 obj
+        """
+        self.model.addConstrs(
+            gp.quicksum(-self.MPI[i] * self.y[i, k] for i in self.V for k in self.K) >= self.settled_f1_obj_value,
+            name="obj2constraint"
+        )
+
     def set_constraints(self):
         self.constraint_time_window()  # (5.17)
         self.constraint_visit()  # (5.18)
@@ -159,6 +173,9 @@ class GModel():
         self.constraint_time_continuity()  # (5.23)
         '''最后两个约束不确定'''
         self.constraint_time_calculation()  # (5.25)
+
+        self.constraint_add_first_objective()
+
 
     def set_model_parameters(self):
         '''求解时间限制'''
@@ -210,13 +227,11 @@ class GModel():
         self.set_model_parameters()
         self.model.optimize()
 
-        self.add_object_constraints()
-
         self.model_solver_print()
         self.model_result_analysis()
 
 
-if __name__ == "__main__":
-    print_hi("PyCharm")
-    gq_model = GModel()
-    gq_model.solve()
+# if __name__ == "__main__":
+#     print_hi("PyCharm")
+#     gq_model = GModel()
+#     gq_model.solve()
